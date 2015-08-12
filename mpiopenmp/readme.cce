@@ -1,0 +1,38 @@
+#!/bin/bash
+
+## Setup ----
+# module use $APPS/easybuild/modules/all
+module load PrgEnv-cray
+module load craype-accel-nvidia35  # mandatory
+module load gcc                    # mandatory
+module list -t
+	# Currently Loaded Modulefiles:
+	# craype-haswell
+	# craype/2.3.0
+	# cce/8.3.13.103
+	# mvapich2_cce/2.0.1_cray83
+	# cray-libsci/13.0.3
+	# craype-network-infiniband
+	# PrgEnv-cray/1.0.0
+        # 
+        # cray-libsci_acc/3.1.2
+        # cudatoolkit/6.5.14
+        # craype-accel-nvidia35
+        # gcc/4.8.2
+
+## Compile ----
+cd /apps/escha/mchquickstart.git/mpiopenmp/CRAY/
+ftn -homp ../src/hello_world_mpi_openmp.F90     # Fortran
+cc -homp ../src/hello_world_mpi_openmp.c        # C
+CC -homp ../src/hello_world_mpi_openmp.cpp      # C++
+
+## Run ----
+export OMP_NUM_THREADS=2
+man srun
+srun --exclusive -n3 -c$OMP_NUM_THREADS ./a.out 
+	# Hello world! From thread 0 of 2 from process 1 of 3 on keschcn-0001
+	# Hello world! From thread 1 of 2 from process 1 of 3 on keschcn-0001
+	# Hello world! From thread 0 of 2 from process 0 of 3 on keschcn-0001
+	# Hello world! From thread 1 of 2 from process 0 of 3 on keschcn-0001
+	# Hello world! From thread 0 of 2 from process 2 of 3 on keschcn-0001
+	# Hello world! From thread 1 of 2 from process 2 of 3 on keschcn-0001
