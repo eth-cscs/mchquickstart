@@ -1,0 +1,9 @@
+#!/bin/bash
+
+srun -n1 cat /proc/cpuinfo
+        # ( HASWELL )
+        # processor : 0-23
+        # model name : Intel ( R ) Xeon ( R ) CPU E5-2690 v3 @ 2.60 GHz
+
+srun -n1 cat /proc/meminfo
+        # MemTotal:       264572408 kB (256 GB)
