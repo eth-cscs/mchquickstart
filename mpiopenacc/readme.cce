@@ -1,0 +1,37 @@
+#!/bin/bash
+
+## Setup ----
+# module use $APPS/easybuild/modules/all
+module load PrgEnv-cray
+module load craype-accel-nvidia35  # mandatory
+module load gcc                    # mandatory
+module list -t
+	# Currently Loaded Modulefiles:
+	# craype-haswell
+	# craype/2.3.0
+	# cce/8.3.13.103
+	# mvapich2_cce/2.0.1_cray83
+	# cray-libsci/13.0.3
+	# craype-network-infiniband
+	# PrgEnv-cray/1.0.0
+        # 
+        # cray-libsci_acc/3.1.2
+        # cudatoolkit/6.5.14
+        # craype-accel-nvidia35
+        # gcc/4.8.2
+
+## Compile ----
+cd /apps/escha/mchquickstart.git/mpiopenacc/CRAY/
+ftn -hacc ../src/mpiacc_f.F90     # Fortran
+ cc -hacc ../src/mpiacc_c.c       # C
+ CC -hacc ../src/mpiacc_cxx.cpp   # C++
+
+## Run ----
+export OMP_NUM_THREADS=1
+srun --exclusive -n1 ./a.out 128
+	#  using MPI with  1  PEs, N= 128
+	#  _OPENACC version: 201306
+	#  c[1]= 101.
+	#  c[N/2]= 6464.
+	#  c[N-1]= 12827.
+
