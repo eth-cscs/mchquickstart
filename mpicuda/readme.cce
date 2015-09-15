@@ -11,7 +11,7 @@ module purge
 module load craype-haswell
 module load PrgEnv-cray
 module load craype-accel-nvidia35
-module load gcc                    # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
+module load GCC/4.8.2 # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
 
 module list -t
 	# Currently Loaded Modulefiles:
@@ -25,7 +25,7 @@ module list -t
 	# PrgEnv-cray/1.0.0
 	# cray-libsci_acc/3.1.2
 	# craype-accel-nvidia35
-        # gcc/4.8.2
+        # GCC/4.8.2
 
 ## Compile ----
 mkdir -p CRAY
@@ -38,7 +38,7 @@ cc mpic.o mpicu.o -lstdc++ -o mpi_cuda_test.exe
 
 ## Run ----
 export OMP_NUM_THREADS=1
-srun --exclusive -n1 a.out 12
+srun --gres=gpu:1 --exclusive -n1 mpi_cuda_test.exe 12
 	# 0 6 11
 	# 0 606 1111 
 	# 

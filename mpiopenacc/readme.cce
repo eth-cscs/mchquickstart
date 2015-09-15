@@ -1,10 +1,16 @@
 #!/bin/bash
 
+# Based on PrgEnv-cray/1.0.0 ----
 ## Setup ----
 # module use $APPS/easybuild/modules/all
+module help PrgEnv-cray
+
+# module use $APPS/easybuild/modules/all
+module purge
+module load craype-haswell
 module load PrgEnv-cray
-module load craype-accel-nvidia35  # mandatory
-module load gcc                    # mandatory
+module load craype-accel-nvidia35
+module load GCC/4.8.2 # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
 module list -t
 	# Currently Loaded Modulefiles:
 	# craype-haswell
@@ -13,25 +19,51 @@ module list -t
 	# mvapich2_cce/2.0.1_cray83
 	# cray-libsci/13.0.3
 	# craype-network-infiniband
+	# cudatoolkit/6.5.14
 	# PrgEnv-cray/1.0.0
-        # 
-        # cray-libsci_acc/3.1.2
-        # cudatoolkit/6.5.14
-        # craype-accel-nvidia35
-        # gcc/4.8.2
-
+	# cray-libsci_acc/3.1.2
+	# craype-accel-nvidia35
+	# GCC/4.8.2
+	
 ## Compile ----
-cd /apps/escha/mchquickstart.git/mpiopenacc/CRAY/
-ftn -hacc ../src/mpiacc_f.F90     # Fortran
- cc -hacc ../src/mpiacc_c.c       # C
- CC -hacc ../src/mpiacc_cxx.cpp   # C++
+mkdir -p CRAY
+cd CRAY
+
+### Fortran
+ftn -hacc ../src/mpiacc_f.F90 -o mpiacc_f.exe
+ldd mpiacc_f.exe | grep "not"
+
+### C
+cc -hacc ../src/mpiacc_c.c -o mpiacc_c.exe
+ldd mpiacc_c.exe | grep "not"
+
+### C++
+CC -hacc ../src/mpiacc_cxx.cpp -o mpiacc_cxx.exe
+ldd mpiacc_cxx.exe | grep "not"
 
 ## Run ----
 export OMP_NUM_THREADS=1
-srun --exclusive -n1 ./a.out 128
+
+### Fortran
+srun --gres=gpu:1 --exclusive -n1 mpiacc_f.exe 128
 	#  using MPI with  1  PEs, N= 128
 	#  _OPENACC version: 201306
 	#  c[1]= 101.
 	#  c[N/2]= 6464.
 	#  c[N-1]= 12827.
 
+### C
+srun  --gres=gpu:1 --exclusive -n1 mpiacc_c.exe 128
+	# using MPI with 1 PEs, N=128
+	# c[0]=0.000000
+	# c[N-1]=12700.000000
+	# _OPENACC version: 201306
+	# c[0]=0.000000
+	# c[N-1]=12700.000000
+
+
+### C++
+srun  --gres=gpu:1 --exclusive -n1 mpiacc_cxx.exe 128
+	# using MPI with 1 PEs, N=128
+	# _OPENACC version:201306
+	# ACC: craylibs/libcrayacc/acc_hw_nvidia.c:662 CRAY_ACC_ERROR -  cuStreamSynchronize returned CUDA_ERROR_LAUNCH_FAILED from ../src/mpiacc_cxx.cpp:26
