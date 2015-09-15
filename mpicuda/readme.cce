@@ -1,10 +1,18 @@
 #!/bin/bash
 
+# Based on PrgEnv-cray/1.0.0 ----
+
 ## Setup ----
 # module use $APPS/easybuild/modules/all
+module help PrgEnv-cray
+
+# module use $APPS/easybuild/modules/all
+module purge
+module load craype-haswell
 module load PrgEnv-cray
-module load craype-accel-nvidia35  # mandatory
-module load gcc                    # mandatory
+module load craype-accel-nvidia35
+module load gcc                    # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
+
 module list -t
 	# Currently Loaded Modulefiles:
 	# craype-haswell
@@ -13,18 +21,20 @@ module list -t
 	# mvapich2_cce/2.0.1_cray83
 	# cray-libsci/13.0.3
 	# craype-network-infiniband
+	# cudatoolkit/6.5.14
 	# PrgEnv-cray/1.0.0
-        # 
-        # cray-libsci_acc/3.1.2
-        # cudatoolkit/6.5.14
-        # craype-accel-nvidia35
+	# cray-libsci_acc/3.1.2
+	# craype-accel-nvidia35
         # gcc/4.8.2
 
 ## Compile ----
-cd /apps/escha/mchquickstart.git/mpicuda/CRAY/
+mkdir -p CRAY
+cd CRAY
 nvcc -arch=sm_37 -c ../src/mpicu.cu
 cc -c ../src/mpic.c 
-CC  mpic.o mpicu.o      # link with cc => undefined reference to __gxx_personality_v0
+cc mpic.o mpicu.o -lstdc++ -o mpi_cuda_test.exe
+# Remark: linking with cc will fail with the following error message: undefined reference to __gxx_personality_v0
+#         workaround is to link with CC instead of cc or add -lstdc++
 
 ## Run ----
 export OMP_NUM_THREADS=1
