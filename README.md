@@ -18,7 +18,7 @@ For compilation with GNU compilers, the recommended programming environment is:
 ```
 This will set GCC/4.8.2-EB as the default compiler. 
 
-The gcc/4.8.2 modulefile installed by Cray cannot assemble haswell instructions (thus -march=native is not working). Cray is aware of the problem and is working on a permanent solution. [GPP]
+The gcc/4.8.2 modulefile installed by Cray cannot assemble haswell instructions (thus -march=native is not working). Therefore the recommended GNU compiler currently is GCC/4.8.2-EB (loaded by PrgEnv-gnu/2015b).
 
 ## CCE programming environment
 For compilation with CCE compilers, the recommended programming environment is: 
