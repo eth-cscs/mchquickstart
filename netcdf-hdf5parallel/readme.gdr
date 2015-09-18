@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# setup
+# module use $APPS/easybuild/modules/all
+$ module load netCDF/4.3.3.1-gmvapich2-2015b-gdr
+
+$ module list -t
+Currently Loaded Modulefiles:
+craype-haswell
+binutils/2.24
+GCC/4.8.2-EB
+cudatoolkit/6.5.14
+mvapich2gdr_gnu/2.1rc2
+MVAPICH2/2.1rc2-gdr
+gmvapich2/2015b-gdr
+zlib/1.2.8-gmvapich2-2015b-gdr
+Szip/2.1-gmvapich2-2015b-gdr
+HDF5/1.8.15-gmvapich2-2015b-gdr
+netCDF/4.3.3.1-gmvapich2-2015b-gdr
+
+# build
+cd /apps/escha/mchquickstart.git/netcdf-hdf5parallel/src
+mpicc -DNETCDF4 -DPARIO io.c -o ../bin/netcdf_write.x -L/apps/escha/easybuild/software/netCDF/4.3.3.1-gmvapich2-2015b-gdr/lib64 -L/opt/local/slurm/default/lib64/ -lnetcdf -lm
+
+# run
+cd /apps/escha/mchquickstart.git/netcdf-hdf5parallel/run
+salloc --exclusive --job-name="netcdf-hdf5parallel_write" --nodes=1 --ntasks=24 --ntasks-per-node=24 --time=00:05:00
+srun -n $SLURM_NTASKS ../bin/netcdf_write.x -x 4 -y 6 -f 256.4x6 -b 256 -t 10
