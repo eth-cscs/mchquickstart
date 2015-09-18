@@ -1,0 +1,165 @@
+#!/bin/bash
+
+# Based on the latest PrgEnv-gnu ----
+
+ ####   #    #  #    #    #      ####   #####   #####
+#    #  ##   #  #    #    #     #    #  #    #  #    #
+#       # #  #  #    #  #####   #       #    #  #    #
+#  ###  #  # #  #    #    #     #  ###  #    #  #####
+#    #  #   ##  #    #    #     #    #  #    #  #   #
+ ####   #    #   ####            ####   #####   #    #
+
+## Setup ----
+module help PrgEnv-gnu/2015b-gdr
+module help gmvolf/2015b
+# ----------- Module Specific Help for 'gmvapich2/2015b-gdr' --------
+# GNU Compiler Collection (GCC) based compiler toolchain,
+# including MVAPICH2 for MPI support. - Homepage: (none)
+module purge
+module load craype-haswell
+module load PrgEnv-gnu/2015b-gdr
+# module load craype-accel-nvidia35
+
+module list -t
+	# Currently Loaded Modulefiles:
+	# craype-haswell
+	# binutils/2.24
+	# GCC/4.8.2-EB
+	# cudatoolkit/6.5.14
+	# mvapich2gdr_gnu/2.1rc2
+	# MVAPICH2/2.1rc2-gdr
+	# gmvapich2/2015b-gdr
+	# PrgEnv-gnu/2015b-gdr
+	
+## Compile ----
+git clone https://github.com/cosunae/HaloExchangeBenchmarks.git   HaloExchangeBenchmarks.git
+mkdir -p HaloExchangeBenchmarks.git/gcl/buildGNUGDR
+cd HaloExchangeBenchmarks.git/gcl/buildGNUGDR/
+
+cmake \
+-DCMAKE_C_FLAGS="-L/opt/local/slurm/default/lib64" \
+-DCMAKE_CXX_FLAGS="-L/opt/local/slurm/default/lib64 -DBENCH=10" \
+-DCMAKE_C_COMPILER=`which mpicc` \
+-DCMAKE_CXX_COMPILER=`which mpicxx` \
+-DCMAKE_BUILD_TYPE=Release \
+-DBoost_INCLUDE_DIR="/apps/escha/easybuild/software/Boost/1.49.0-gmvolf-2015b-Python-2.7.10/include" \
+-DGCL_MPI=ON \
+-DGCL_GPU=ON \
+-DCUDA_NVCC_FLAGS="-arch=sm_37" \
+-DGCL_ONLY=OFF \
+..
+	# -- The C compiler identification is GNU 4.8.2
+	# -- The CXX compiler identification is GNU 4.8.2
+	# -- Check for working C compiler: /users/hamidouc/GPU/mvapich2/install/bin/mpicc
+	# -- Check for working C compiler: /users/hamidouc/GPU/mvapich2/install/bin/mpicc -- works
+	# -- Detecting C compiler ABI info
+	# -- Detecting C compiler ABI info - done
+	# -- Check for working CXX compiler: /users/hamidouc/GPU/mvapich2/install/bin/mpicxx
+	# -- Check for working CXX compiler: /users/hamidouc/GPU/mvapich2/install/bin/mpicxx -- works
+	# -- Detecting CXX compiler ABI info
+	# -- Detecting CXX compiler ABI info - done
+	# Boost  found.
+	# -- Found CUDA: /global/opt/nvidia/cudatoolkit/6.5.14 (found version "6.5") 
+	# -- Found Doxygen: /usr/bin/doxygen (found version "1.6.1") 
+	# -- Configuring done
+	# -- Generating done
+make cuda_test_halo_exchange_3D_all_2 VERBOSE=1         
+        # => build/cuda_test_halo_exchange_3D_all_2
+
+## Run ----
+export OMP_NUM_THREADS=1                                                                                                                           
+export MV2_ENABLE_AFFINITY=0
+export MV2_USE_CUDA=1
+export MALLOC_MMAP_MAX_=0
+export MALLOC_TRIM_THRESHOLD_=536870912
+#export COSMO_NPROC_NODEVICE=0
+export CUDA_AUTO_BOOST=0
+export MV2_CUDA_IPC=1
+#export MPICH_ASYNC_PROGRESS=1
+export MV2_USE_GPUDIRECT_RECEIVE_ALL=1
+#export SLURM_NPROCS=8
+export G2G=1
+srun -m block:block --gres=gpu:2 --exclusive -n2 -c$OMP_NUM_THREADS ./build/cuda_test_halo_exchange_3D_all_2 100 100 100 2 1 3
+	# MV2_COMM_WORLD_LOCAL_RANK 0
+	# local rank = 0 dev id = 0
+	# 0 2
+	# out0.txt
+	# MV2_COMM_WORLD_LOCAL_RANK 1
+	# local rank = 1 dev id = 0
+	# 1 2
+	# out1.txt
+
+## Environment variables:
+
+export MV2_ENABLE_AFFINITY=0
+# It's needed so MVAPICH doesn't try to undo the slurm affinity assignments,
+# however, on kesch/escha we take care of setting this at the system level. So
+# it's not needed unless you need script portability to other systems.
+
+export MV2_USE_CUDA=1
+# This is automatically included with G2G=1
+
+export MPICH_RDMA_ENABLED_CUDA=1
+# Not used on Kesch/Escha, only valid on XK/XC systems
+
+export MPICH_G2G_PIPELINE=256 1
+# Not used on Kesch/Escha, only valid on XK/XC systems. There's alternate
+# tuning parameters available for MVAPICH2GDR, but the userguide is probably
+# better at explaining them than I can here.
+
+export MALLOC_MMAP_MAX_=0
+# I see the recommendation for these values on NERSC's guide for franklin
+# tuning
+# (https://www.nersc.gov/users/computational-systems/retired-systems/franklin/running-jobs/runtime-tuning-options/)
+# MALLOC_MMAP_MAX_ limits the number of 'internal' mmap regions. The setting of
+# 0 means that the program will not use any "non" heap mapping regions instead
+# of the default value of 64. This eliminates the system calls to mmap/munmap.
+
+export MALLOC_TRIM_THRESHOLD_=536870912
+# As above from NERSC... I see other places recommend setting this to -1
+# instead: MALLOC_TRIM_THRESHOLD_ is the amount of free space at the top of the
+# heap after a free() that needs to exist before malloc will return the memory
+# to the OS. Setting MALLOC_TRIM_THRESHOLD_ helps performance by reducing
+# system time overhead by reducing the number of calls to sbrk/brk. The default
+# setting of 128 KBytes is much too low for a node with 4 GBytes of memory and
+# one application. We suggest setting it to 0.5 GBytes.
+
+export COSMO_NPROC_NODEVICE=0
+
+export G2G=1
+# This controls the operation mode of the GPU affinity mapping. G2G=1 does a
+# 1:1 mapping of CORE:GPU with the closest infiniband adapter.  Without it, all
+# tasks see all GPUS and network cards.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#bug # mpicc -DHAVE_CUDA_H=1 -D_ENABLE_CUDA_=1 ../src/osu_bw.c -o osu_bw.exe -L/opt/local/slurm/default/lib64 `pkg-config --libs cudart` -lcuda
+#bug # ldd osu_bw.exe |grep "not found"
+#bug 
+#bug ## Run2 ----
+#bug export OMP_NUM_THREADS=1
+#bug export G2G=1
+#bug export MV2_USE_CUDA=1
+#bug srun --gres=gpu:16 --exclusive -n2 -N2 osu_bw.exe       D D
+#bug         # srun: error: keschcn-0001: task 0: Segmentation fault (core dumped)
+#bug         # ../src/osu_bw.c / main:
+#bug         # L192: MPI_Isend(s_buf, size, MPI_CHAR, 1, 100, MPI_COMM_WORLD, request + j);
+#bug 
+#bug export MV2_ENABLE_AFFINITY=0
+#bug export MV2_USE_CUDA=1
+#bug export MALLOC_MMAP_MAX_=0
+#bug export MALLOC_TRIM_THRESHOLD_=536870912
+#bug # export COSMO_NPROC_NODEVICE=0
+#bug export CUDA_AUTO_BOOST=0
