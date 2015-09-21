@@ -48,7 +48,7 @@ srun -n $SLURM_NTASKS ../bin/netcdf_write_gdr.x -x 4 -y 6 -f 256.4x6 -b 256 -t 1
        # MPI elapsed time: 26.011153 s
        # Average performance: 0.576676 GB/s
 
-## Run on 2 nodes ----
+## Run on 4 nodes ----
 
 salloc --exclusive --job-name="netcdf-hdf5parallel_write_gdr" --nodes=4 --ntasks=96 --ntasks-per-node=24 --time=00:05:00
 srun -n $SLURM_NTASKS ../bin/netcdf_write_gdr.x -x 24 -y 4 -f 256.24x4 -b 256 -t 10
