@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Based on the latest PrgEnv-gnu ----
+
+## Setup ----
+
+module help PrgEnv-gnu/2015b
+module help gmvolf/2015b
+
+
+module purge
+module load craype-haswell
+module load PrgEnv-gnu/2015b-gdr
+module load netCDF/4.3.3.1-gmvapich2-2015b-gdr
+
+module list -t
+       # Currently Loaded Modulefiles:
+       # craype-haswell
+       # binutils/2.24
+       # GCC/4.8.2-EB
+       # cudatoolkit/6.5.14
+       # mvapich2gdr_gnu/2.1rc2
+       # MVAPICH2/2.1rc2-gdr
+       # gmvapich2/2015b-gdr
+       # zlib/1.2.8-gmvapich2-2015b-gdr
+       # Szip/2.1-gmvapich2-2015b-gdr
+       # HDF5/1.8.15-gmvapich2-2015b-gdr
+       # netCDF/4.3.3.1-gmvapich2-2015b-gdr
+
+
+## Compile ----
+mkdir -p GNU
+cd GNU
+
+mpicc -DNETCDF4 -DPARIO ../src/io.c -o ../bin/netcdf_write_gdr.x `pkg-config --libs netcdf` -L/opt/local/slurm/default/lib64/ -lpmi
+ldd ../bin/netcdf_write_gdr.x 
+ldd ../bin/netcdf_write_gdr.x | grep -i "gdr"
+ldd ../bin/netcdf_write_gdr.x | grep "not found"
+
+
+## Run ----
+
+salloc --exclusive --job-name="netcdf-hdf5parallel_write_gdr" --nodes=1 --ntasks=24 --ntasks-per-node=24 --time=00:05:00
+srun -n $SLURM_NTASKS ../bin/netcdf_write_gdr.x -x 4 -y 6 -f 256.4x6 -b 256 -t 10
+       # Testing get_procmem... 867209216.000000 1159020544.000000 291811328.000000
+       # written grids of 256,256,256
+       # written 10 iterations
+       # MPI elapsed time: 26.011153 s
+       # Average performance: 0.576676 GB/s
+
+## Cleanup output ----
+
+ls -al 256.4x6.????_p.nc
+rm -f  256.4x6.????_p.nc

@@ -36,11 +36,14 @@ mkdir -p GNU
 cd GNU
 nvcc -arch=sm_37 -c ../src/mpicu.cu 
 mpicc -c ../src/mpic.c
-mpicc  mpic.o mpicu.o  -o mpi_cuda_test.exe -L$CUDATOOLKIT_HOME/lib64 -lcudart  -lstdc++
-ldd mpi_cuda_test.exe |grep "not found"
-# Remark: linking with mpicc will fail with the following error message: undefined reference to __gxx_personality_v0
-#         workaround is to link with mpicxx instead of mpicc or add -lstdc++
+mpicc  mpic.o mpicu.o  -o mpi_cuda_test.exe `pkg-config --libs cudart` -lstdc++
+# XXX Remark: 
+# XXX Linking with mpicc widhout adding -lstdc++ will fail
+# XXX with the following error message:
+# XXX   - undefined reference to __gxx_personality_v0
+# XXX the suggested workaround is to link with mpicxx instead of mpicc or to add -lstdc++
 
+ldd mpi_cuda_test.exe |grep "not found"
 
 
 ## Run ----

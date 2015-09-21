@@ -2,10 +2,8 @@
 
 # Based on PrgEnv-cray/1.0.0 ----
 ## Setup ----
-# module use $APPS/easybuild/modules/all
 module help PrgEnv-cray
 
-# module use $APPS/easybuild/modules/all
 module purge
 module load craype-haswell
 module load PrgEnv-cray

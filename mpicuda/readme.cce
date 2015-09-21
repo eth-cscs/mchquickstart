@@ -11,7 +11,12 @@ module purge
 module load craype-haswell
 module load PrgEnv-cray
 module load craype-accel-nvidia35
-module load GCC/4.8.2-EB # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
+module load GCC/4.8.2-EB 
+# XXX Remark:
+# XXX The a gnu compiler 4.8.x is needed in order to provide a libstdc++.so 
+# XXX compatible with GLIBCXX_3.4.15 as required by the 'PrgEnv-cray'.
+# XXX This will prevent the following error: 
+# XXX   /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
 
 module list -t
 	# Currently Loaded Modulefiles:
@@ -33,8 +38,14 @@ cd CRAY
 nvcc -arch=sm_37 -c ../src/mpicu.cu
 cc -c ../src/mpic.c 
 cc mpic.o mpicu.o -lstdc++ -o mpi_cuda_test.exe
-# Remark: linking with cc will fail with the following error message: undefined reference to __gxx_personality_v0
-#         workaround is to link with CC instead of cc or add -lstdc++
+# XXX Remark: 
+# XXX Linking with cc widhout adding -lstdc++ will fail
+# XXX with the following error message:
+# XXX   - undefined reference to __gxx_personality_v0
+# XXX the suggested workaround is to link with CC instead of cc or to add -lstdc++
+
+ldd mpi_cuda_test.exe 
+ldd mpi_cuda_test.exe | grep "not found"
 
 ## Run ----
 export OMP_NUM_THREADS=1
