@@ -15,9 +15,13 @@ module help gmvolf/2015b
 # ----------- Module Specific Help for 'gmvapich2/2015b-gdr' --------
 # GNU Compiler Collection (GCC) based compiler toolchain,
 # including MVAPICH2 for MPI support. - Homepage: (none)
+
 module purge
 module load craype-haswell
 module load PrgEnv-gnu/2015b-gdr
+module rm mvapich2gdr_gnu/2.1rc2 ; module load mvapich2gdr_gnu/2.1
+which mpicc
+        # /opt/mvapich2/gdr/2.1/cuda6.5/gnu/bin/mpicc
 # module load craype-accel-nvidia35
 
 module list -t
@@ -25,11 +29,11 @@ module list -t
 	# craype-haswell
 	# binutils/2.24
 	# GCC/4.8.2-EB
-	# cudatoolkit/6.5.14
-	# mvapich2gdr_gnu/2.1rc2
 	# MVAPICH2/2.1rc2-gdr
 	# gmvapich2/2015b-gdr
 	# PrgEnv-gnu/2015b-gdr
+	# cudatoolkit/6.5.14
+	# mvapich2gdr_gnu/2.1
 	
 ## Compile ----
 git clone https://github.com/cosunae/HaloExchangeBenchmarks.git   HaloExchangeBenchmarks.git
@@ -88,6 +92,16 @@ srun -m block:block --gres=gpu:2 --exclusive -n2 -c$OMP_NUM_THREADS ./build/cuda
 	# local rank = 1 dev id = 0
 	# 1 2
 	# out1.txt
+
+Warning *** The GPU and IB selected are not on the same socket. Does not deliver best performance 
+[keschcn-0001:mpi_rank_0][cudaipc_init_dynamic] [src/mpid/ch3/channels/mrail/src/gen2/ibv_cuda_ipc.c:696] cuda failed with invalid argument 
+[keschcn-0001:mpi_rank_1][cudaipc_init_dynamic] [src/mpid/ch3/channels/mrail/src/gen2/ibv_cuda_ipc.c:696] cuda failed with invalid argument 
+
+
+
+
+
+
 
 ## Environment variables:
 
