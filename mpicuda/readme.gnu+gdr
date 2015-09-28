@@ -70,8 +70,12 @@ cmake \
 make cuda_test_halo_exchange_3D_all_2 VERBOSE=1         
         # => build/cuda_test_halo_exchange_3D_all_2
 
+
+
+
 ## Run ----
-export OMP_NUM_THREADS=1                                                                                                                           
+export OMP_NUM_THREADS=1
+export NOSETHCA=1
 export MV2_ENABLE_AFFINITY=0
 export MV2_USE_CUDA=1
 export MALLOC_MMAP_MAX_=0
@@ -104,6 +108,8 @@ Warning *** The GPU and IB selected are not on the same socket. Does not deliver
 
 
 ## Environment variables:
+export NOSETHCA=1 
+# That should allow mvapich to pick its own HCA
 
 export MV2_ENABLE_AFFINITY=0
 # It's needed so MVAPICH doesn't try to undo the slurm affinity assignments,
@@ -144,7 +150,10 @@ export G2G=1
 # This controls the operation mode of the GPU affinity mapping. G2G=1 does a
 # 1:1 mapping of CORE:GPU with the closest infiniband adapter.  Without it, all
 # tasks see all GPUS and network cards.
-
+# if you don't export G2G=1 or =2 you won't get optimal cpu-gpu-iba mapping:
+# Exporting G2G=1 maps 1 CPU:GPU:IBA (all singular) which should be on the same socket. 
+# G2G=2 maps CPUCORE(singular):GPUS(multiple):IBA(singular).
+# Both modes should be optimal for the given core assignment.
 
 
 
