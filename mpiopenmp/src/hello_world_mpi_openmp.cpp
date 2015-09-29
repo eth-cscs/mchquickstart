@@ -1,8 +1,11 @@
 /* requires console i/o on all mpi processes, so might fail, twr */
+#include <string.h>
+#include <stdlib.h>
 #include <iostream>
 #include <mpi.h>   
 #include <omp.h>
 
+int mycpuid(void);
 int main(int argc, char *argv[]) {
   int rank, size, th_id, nthreads;
 
@@ -15,9 +18,10 @@ int main(int argc, char *argv[]) {
   th_id = omp_get_thread_num();
   nthreads = omp_get_num_threads();
 #pragma omp critical
-  std::cout << "mpi task " << rank << "/" << size << " openmp thread " << th_id << "/" << nthreads << std::endl;
+  std::cout << "mpi task " << rank << "/" << size << " openmp thread " << th_id << "/" << nthreads << " core=" << mycpuid() << std::endl;
   }
   MPI::Finalize();
 
   return 0;
 } /* end func main */
+
