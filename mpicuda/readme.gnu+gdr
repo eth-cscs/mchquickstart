@@ -34,7 +34,11 @@ module list -t
 	# PrgEnv-gnu/2015b-gdr
 	# cudatoolkit/6.5.14
 	# mvapich2gdr_gnu/2.1
-	
+PrgEnv-gnu/2015b-gdr 
+loads gmvapich2/2015b-gdr 
+which loads MVAPICH2/2.1rc2-gdr + GCC/4.8.2-EB 
+which loads mvapich2gdr_gnu/2.1rc2 + cudatoolkit/6.5.14
+
 ## Compile ----
 git clone https://github.com/cosunae/HaloExchangeBenchmarks.git   HaloExchangeBenchmarks.git
 mkdir -p HaloExchangeBenchmarks.git/gcl/buildGNUGDR
