@@ -1,61 +1,57 @@
 #!/bin/bash
 
-# Based on PrgEnv-cray/1.0.0 ----
+# Based on the latest PrgEnv-cray  ----
+
 
 ## Setup ----
-# module use $APPS/easybuild/modules/all
-module help PrgEnv-cray
+module avail PrgEnv-cray
+module help  PrgEnv-cray/15.10_cuda_7.0
 
-# module use $APPS/easybuild/modules/all
 module purge
 module load craype-haswell
-module load PrgEnv-cray
+module load PrgEnv-cray/15.10_cuda_7.0
 module load craype-accel-nvidia35
-module swap cce cce/8.4.0
-module load GCC/4.8.2-EB 
-# Remark:
-# The a gnu compiler 4.8.x is needed in order to provide a libstdc++.so 
-# compatible with GLIBCXX_3.4.15 as required by the 'PrgEnv-cray'.
-# This will prevent the following error: 
-#   /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
+module load GCC/4.9.3-binutils-2.25
 
 module list -t
 	# Currently Loaded Modulefiles:
 	# craype-haswell
-	# craype/2.3.0
-	# cce/8.3.13.103
-	# mvapich2_cce/2.0.1_cray83
-	# cray-libsci/13.0.3
+	# craype/2.4.2
+	# cce/8.4.0
+	# mvapich2_cce/2.0.1.4
+	# cray-libsci/13.2.0
 	# craype-network-infiniband
-	# cudatoolkit/6.5.14
-	# PrgEnv-cray/1.0.0
+	# cudatoolkit/7.0.28
+	# PrgEnv-cray/15.10_cuda_7.0
 	# cray-libsci_acc/3.1.2
 	# craype-accel-nvidia35
-        # GCC/4.8.2-EB
+	# GCC/4.9.3-binutils-2.25
 
 ## Compile ----
 mkdir -p CRAY
 cd CRAY
+ls -al
+
 nvcc -arch=sm_37 -c ../src/mpicu.cu
 cc -c ../src/mpic.c 
-cc mpic.o mpicu.o -lstdc++ -o mpi_cuda_test.exe
-# Remark: 
-# Linking with cc without adding -lstdc++ will fail
-# with the following error message:
-#   - undefined reference to __gxx_personality_v0
-# the suggested workaround is to link with CC instead of cc or to add -lstdc++
+mpicc -o mpi_cuda_test.exe `pkg-config --libs cudart` mpic.o mpicu.o
 
 ldd mpi_cuda_test.exe 
-ldd mpi_cuda_test.exe | grep "not found"
+ldd mpi_cuda_test.exe | grep -i "not found"
+ldd mpi_cuda_test.exe | grep -i "cuda" 
+ldd mpi_cuda_test.exe | grep -i "cuda" | egrep -v 7\.0
+
 
 ## Run ----
+salloc --exclusive --gres=gpu:12 --ntasks=12 --time=00:05:00 --job-name="mpicuda-cce" 
+
 export OMP_NUM_THREADS=1
-srun --gres=gpu:1 --exclusive -n1 mpi_cuda_test.exe 12
-	# 0 6 11
-	# 0 606 1111 
-	# 
-	# Process 0 on keschcn-0009 out of 1 Device 0 (Tesla K80)
-	# Device 0: "Tesla K80"
-	#   CUDA Driver Version / Runtime Version     6.5 / 6.5
-	#   CUDA Capability Major/Minor version number:    3.7
-	#   NVRM version: NVIDIA UNIX x86_64 Kernel Module  340.87  Thu Mar 19 23:39:02 PDT 2015
+srun   --exclusive --gres=gpu:1 --ntasks=1 mpi_cuda_test.exe 12
+        # 0 6 11
+        # 0 606 1111
+        # Process 0 on keschcn-0010 out of 1 Device 0 (Tesla K80)
+        #
+        # Device 0: "Tesla K80"
+        #   CUDA Driver Version / Runtime Version     7.0 / 7.0
+        #   CUDA Capability Major/Minor version number:    3.7
+        # NVRM version: NVIDIA UNIX x86_64 Kernel Module  346.82  Wed Jun 17 10:37:46 PDT 2015
