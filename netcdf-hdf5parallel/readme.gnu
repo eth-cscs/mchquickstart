@@ -4,38 +4,37 @@
 
 ## Setup ----
 
-module help PrgEnv-gnu/2015b
-module show gmvolf/2015b
-
+module help PrgEnv-gnu/15.11
 
 module purge
 module load craype-haswell
-module load PrgEnv-gnu/2015b
-module load netCDF/4.3.3.1-gmvolf-2015b
+module load PrgEnv-gnu/15.11
+module load netCDF/4.3.3.1-gmvolf-15.11
 
 module list -t
        # Currently Loaded Modulefiles:
        # craype-haswell
-       # binutils/2.24
-       # GCC/4.8.2-EB
-       # cudatoolkit/6.5.14
-       # MVAPICH2/2.0.1-GCC-4.8.2-EB
-       # gmvapich2/2015b
-       # PrgEnv-gnu/2015b
-       # OpenBLAS/0.2.13-GCC-4.8.2-EB-LAPACK-3.5.0
-       # FFTW/3.3.4-gmvapich2-2015b
-       # ScaLAPACK/2.0.2-gmvapich2-2015b-OpenBLAS-0.2.13-LAPACK-3.5.0
-       # gmvolf/2015b
-       # zlib/1.2.8-gmvolf-2015b
-       # Szip/2.1-gmvolf-2015b
-       # HDF5/1.8.15-gmvolf-2015b
-       # netCDF/4.3.3.1-gmvolf-2015b
+       # binutils/2.25
+       # GCC/4.9.3-binutils-2.25
+       # cudatoolkit/7.0.28
+       # MVAPICH2/2.2a-GCC-4.9.3-binutils-2.25
+       # gmvapich2/15.11
+       # PrgEnv-gnu/15.11
+       # OpenBLAS/0.2.13-GCC-4.9.3-binutils-2.25-LAPACK-3.5.0
+       # FFTW/3.3.4-gmvapich2-15.11
+       # ScaLAPACK/2.0.2-gmvapich2-15.11-OpenBLAS-0.2.13-LAPACK-3.5.0
+       # gmvolf/15.11
+       # zlib/.1.2.8-gmvolf-15.11
+       # Szip/.2.1-gmvolf-15.11
+       # HDF5/1.8.15-gmvolf-15.11
+       # netCDF/4.3.3.1-gmvolf-15.11
 
 ## Compile ----
 mkdir -p GNU
+mkdir -p bin
 cd GNU
 
-mpicc -DNETCDF4 -DPARIO ../src/io.c -o ../bin/netcdf_write.x `pkg-config --libs netcdf` -L/opt/local/slurm/default/lib64/ -lpmi
+mpicc -DNETCDF4 -DPARIO ../src/io.c -o ../bin/netcdf_write.x `pkg-config --libs netcdf`
 ldd ../bin/netcdf_write.x 
 ldd ../bin/netcdf_write.x | grep "not found"
 
@@ -55,3 +54,5 @@ srun  -n $SLURM_NTASKS ../bin/netcdf_write.x -x 4 -y 6 -f 256.4x6 -b 256 -t 10
 
 ls -al 256.4x6.????_p.nc
 rm -f  256.4x6.????_p.nc
+
+cd ..
