@@ -59,9 +59,11 @@ int main(int argc, char *argv[])
   if (rank == 0 ) { 
         static const char filename[] = "/proc/driver/nvidia/version";
         FILE *file = fopen ( filename, "r" );
+        // warning: ignoring return value of 'fgets', declared with attribute warn_unused_result [-Wunused-result]
         if ( file != NULL ) {
-                fgets ( gpu_str, sizeof gpu_str, file ) ;
+                if ( fgets ( gpu_str, sizeof gpu_str, file ) != NULL ) {
                 fputs ( gpu_str, stdout ); 
+                }
         }
         fclose(file);
   }

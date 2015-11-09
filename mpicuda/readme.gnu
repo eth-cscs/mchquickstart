@@ -36,7 +36,7 @@ mkdir -p GNU
 cd GNU
 nvcc -arch=sm_37 -c ../src/mpicu.cu 
 mpicc -c ../src/mpic.c
-mpicc  mpic.o mpicu.o  -o mpi_cuda_test.exe `pkg-config --libs cudart` -lstdc++
+mpicc  mpic.o mpicu.o  -o mpi_cuda_test.exe `pkg-config --libs cudart` -lstdc++ -L/opt/local/slurm/default/lib64
 # Remark: 
 # Linking with mpicc without adding -lstdc++ will fail
 # with the following error message:
