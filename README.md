@@ -12,37 +12,26 @@ Download this user guide with:
 and start by reading the readme files.
 
 ## GNU programming environment
-For compilation with GNU compilers, the recommended programming environment is: 
+For compilation with GNU compilers for CPU, the recommended programming environment is: 
 ```
-> module load PrgEnv-gnu/2015b
+> module load PrgEnv-gnu/15.11
 ```
-This will set GCC/4.8.2-EB as the default compiler. 
 
-The gcc/4.8.2 modulefile installed by Cray cannot assemble haswell instructions (thus -march=native is not working). Therefore the recommended GNU compiler currently is GCC/4.8.2-EB (loaded by PrgEnv-gnu/2015b).
+For compilation with GNU compilers for GPU, the recommended programming environment is: 
+```
+> module load PrgEnv-gnu/15.11_cuda_7.0_gdr
+```
 
 ## CCE programming environment
 For compilation with CCE compilers, the recommended programming environment is: 
 ```
-> module load PrgEnv-cray/1.0.0
+> module load PrgEnv-cray/15.10_cuda_7.0
 ```
-## EasyBuild Toolchains / PrgEnv
+Note that there are only 4 licence available on Kesch/Escha, the cce compiler should be primarily used for compiling OpenACC GPU code
 
-You can find here a short description of the existing PrgEnv / toolchains:
-  * Recommended versions:
-    * PrgEnv-gnu/2015b: Default GCC + MVAPICH + CUDA
-      * GCC/4.8.2-EB, MVAPICH2/2.0.1-GCC-4.8.2-EB
-    * gmvapich2/2015b 
-      * same modules as PrgEnv-gnu/2015b (used by EasyBuild)
-    * gmvolf/2015b
-      * PrgEnv-gnu/2015b + OpenBLAS + FFTW + ScaLAPACK
+You can find info about PrgEnv modules using:
+```
+> module help PrgEnv-NAME
+```
 
-  * Additional versions (under test for Cosmo)
-    * PrgEnv-gnu/2015a-gdr-2.1
-      * GCC/4.8.2-EB + mvapich2gdr_gnu/2.1 + CUDA
-    * PrgEnv-gnu/2015b-gdr: Uses mvapich2gdr installed on hamidouc's home (will be removed)
-      * GCC/4.8.2-EB + mvapich2gdr_gnu/2.1rc2 + CUDA
-      
-  * Deprecated versions (will be removed)
-    * gmvapich2-2015a: Uses unsupported gcc/4.8.2
-    * gmvolf-2015a:  Uses unsupported gcc/4.8.2
   
