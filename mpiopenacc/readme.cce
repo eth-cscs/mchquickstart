@@ -1,27 +1,33 @@
 #!/bin/bash
 
-# Based on PrgEnv-cray/1.0.0 ----
+# Note : These instructions are for testing openacc code
+# For COSMO a different list of module is used
+# see e.g. /project/c01/install/kesch/cosmo5/modules_fortran_gpu_double.env
+
+# Based on PrgEnv-cray/15.10_cuda_7.0 ----
 ## Setup ----
-module help PrgEnv-cray
+module help PrgEnv-cray/15.10_cuda_7.0
 
 module purge
 module load craype-haswell
-module load PrgEnv-cray
+module load PrgEnv-cray/15.10_cuda_7.0
 module load craype-accel-nvidia35
-module load GCC/4.8.2-EB # to prevent: /usr/lib64/libstdc++.so.6: version `GLIBCXX_3.4.15' not found
+module load GCC/4.9.3-binutils-2.25 # to prevent "...GLIBCXX ... not found" message
 module list -t
 	# Currently Loaded Modulefiles:
 	# craype-haswell
-	# craype/2.3.0
-	# cce/8.3.13.103
-	# mvapich2_cce/2.0.1_cray83
-	# cray-libsci/13.0.3
-	# craype-network-infiniband
-	# cudatoolkit/6.5.14
-	# PrgEnv-cray/1.0.0
-	# cray-libsci_acc/3.1.2
-	# craype-accel-nvidia35
-	# GCC/4.8.2-EB
+        # craype/2.4.2
+        # cce/8.4.0
+        # mvapich2_cce/2.0.1.4
+        # cray-libsci/13.2.0
+        # craype-network-infiniband
+        # cudatoolkit/7.0.28
+        # PrgEnv-cray/15.10_cuda_7.0
+        # cray-libsci_acc/3.3.0
+        # craype-accel-nvidia35
+        # binutils/2.25
+        # GCC/4.9.3-binutils-2.25
+
 	
 ## Compile ----
 mkdir -p CRAY
@@ -33,10 +39,14 @@ ldd mpiacc_f.exe | grep "not"
 
 ### C
 cc -hacc ../src/mpiacc_c.c -o mpiacc_c.exe
+# CC-1254 crayc: WARNING 
+#  The environment variable "CPATH" is not supported.
 ldd mpiacc_c.exe | grep "not"
 
 ### C++
 CC -hacc ../src/mpiacc_cxx.cpp -o mpiacc_cxx.exe
+#CC-1254 crayc++: WARNING 
+#  The environment variable "CPATH" is not supported.
 ldd mpiacc_cxx.exe | grep "not"
 
 ## Run ----
@@ -60,7 +70,8 @@ srun  --gres=gpu:1 --exclusive -n1 mpiacc_c.exe 128
 	# c[N-1]=12700.000000
 
 
-### C++
+### C++ 
+# Currently not working
 srun  --gres=gpu:1 --exclusive -n1 mpiacc_cxx.exe 128
 	# using MPI with 1 PEs, N=128
 	# _OPENACC version:201306
