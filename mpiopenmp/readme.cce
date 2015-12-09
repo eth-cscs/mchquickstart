@@ -1,8 +1,5 @@
-
-
-#!/bin/bash
-
 !! This file is not up to date, do not use on Kesch !!
+#!/bin/bash
 
 # Based on the latest PrgEnv-cray ----
 module help PrgEnv-cray
